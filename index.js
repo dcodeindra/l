@@ -1,5 +1,6 @@
 const express = require('express');
 const axios = require('axios');
+const cors = require('cors');
 const { parse } = require('node-html-parser');
 
 const app = express(); // Initialize app
