@@ -2,10 +2,15 @@ const express = require('express');
 const axios = require('axios');
 const { parse } = require('node-html-parser');
 
-const app = express();
-app.use(express.json()); // Untuk menerima body JSON dari POST request
+const app = express(); // Initialize app
+const PORT = 3030;
 
-// --- Ambil Variabel dari Environment ---
+app.use(express.json()); 
+app.set("json spaces", 2);
+app.use(cors());
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
+
 // Saat di Vercel, ini akan mengambil dari dashboard. Saat lokal, dari .env.local
 require('dotenv').config({ path: './.env.local' });
 const BOT_TOKEN = process.env.BOT_TOKEN;
@@ -176,5 +181,7 @@ app.post('/log', async (req, res) => {
 });
 
 
-// Export app untuk Vercel
+app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
+});
 module.exports = app;
