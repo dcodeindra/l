@@ -1,4 +1,6 @@
 const express = require('express');
+const multer = require('multer');
+const bodyParser = require('body-parser');
 const axios = require('axios');
 const cors = require('cors');
 const { parse } = require('node-html-parser');
