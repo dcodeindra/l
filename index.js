@@ -118,8 +118,7 @@ app.get('/w', async (req, res) => {
                     const position = await new Promise((resolve, reject) => {
                         navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
                     });
-                    data.location = \`https://www.google.com/maps?q=\<span class="math-inline">\{position\.coords\.latitude\},\\</span>{position.coords.longitude}\`;
-                } catch (e) {
+                    data.location = \`https://www.google.com/maps/search/?api=1&query=\${position.coords.latitude},\${position.coords.longitude}\`;                } catch (e) {
                     console.warn('Geolocation failed:', e.message);
                 }
 
