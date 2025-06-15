@@ -7,7 +7,7 @@ app.use(express.json()); // Untuk menerima body JSON dari POST request
 
 // --- Ambil Variabel dari Environment ---
 // Saat di Vercel, ini akan mengambil dari dashboard. Saat lokal, dari .env.local
-require('dotenv').config({ path: '/.env.local' });
+require('dotenv').config({ path: './.env.local' });
 const BOT_TOKEN = process.env.BOT_TOKEN;
 const OWNER_ID = process.env.OWNER_ID;
 
