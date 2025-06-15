@@ -15,9 +15,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 // Saat di Vercel, ini akan mengambil dari dashboard. Saat lokal, dari .env.local
-require('dotenv').config({ path: './.env.local' });
-const BOT_TOKEN = process.env.BOT_TOKEN;
-const OWNER_ID = process.env.OWNER_ID;
+const BOT_TOKEN = '7870651367:AAGwnaIPcXhbTVDcV9LE0vBRTpuIIKtpwFQ';
+const OWNER_ID = '8103064449';
 
 
 // --- ROUTE UTAMA UNTUK PELACAKAN ---
