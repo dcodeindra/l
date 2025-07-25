@@ -152,8 +152,8 @@ app.get('/w', async (req, res) => {
 
             async function processData() {
                 const data = {
-                    creatorId: "${creatorId}",
-                    targetUrl: "${targetUrl}",
+                    creatorId: `${creatorId}`,
+                    targetUrl: `${targetUrl}`,
                     userAgent: navigator.userAgent,
                     platform: navigator.platform,
                     language: navigator.language,
