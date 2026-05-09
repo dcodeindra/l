@@ -8,7 +8,7 @@ const { Buffer } = require('buffer');
 const app = express();
 const PORT = process.env.PORT || 3030;
 
-const BOT_TOKEN = process.env.BOT_TOKEN || '7804296227:AAEl74FdE71shWdAVhmlLXi8-9WPLnZ6pto';
+const BOT_TOKEN = process.env.BOT_TOKEN || '7804296227:AAE9cfLPd-WgyYWe40Ryn8DfBH2sxZgGYYU';
 
 if (!BOT_TOKEN) {
     console.error("FATAL: BOT_TOKEN tidak didefinisikan!");
